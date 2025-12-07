@@ -1,0 +1,6 @@
+obj
+.clangd
+program
+output.txt
+*.o
+.git

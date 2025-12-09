@@ -1,8 +1,18 @@
 #include "main.h"
 
 int main (int argc, char *argv[]) {
-  //debug();
+  #ifdef DEBUG
+  debug();
+  #endif
+  #ifdef TASK1
   task1(argc, argv);
+  #endif
+  #ifdef TASK2
+  task2(argc, argv);
+  #endif
+  #ifdef TASK3
+  task3(argc, argv);
+  #endif
 
   return 0;
 }

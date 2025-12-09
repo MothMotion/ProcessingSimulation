@@ -3,7 +3,6 @@
 
 #include <cstdint>
 #include <functional>
-#include <queue>
 #include <string>
 #include <deque>
 
@@ -21,14 +20,20 @@ typedef struct Task {
   bool operator<(const Task& other) const;
 } task_t;
 
-typedef class BaseSimulation {
+typedef struct Metrics {
+  uint16_t accept, serviced, deny;
+} metric_t;
+
+template<typename cl_t = client_t, typename tk_t = task_t>
+class BaseSimulation {
 private:
-  float _margin;
 protected:
-  std::queue<client_t> _client_queue;
-  std::deque<task_t> _task_queue;
-  std::deque<client_t> _service_queue;
+  std::deque<cl_t> _client_queue;
+  std::deque<tk_t> _task_queue;
+  std::deque<cl_t> _service_queue;
   uint16_t _queue_limit;
+
+  float _margin;
 
   uint16_t _deny_count      = 0;
   uint16_t _accept_count    = 0;
@@ -46,26 +51,26 @@ public:
 
 
 
-  void add_task(const task_t& task);
+  void add_task(const tk_t& task);
   void pop_task();
-  const task_t& get_task() const;
+  const tk_t& get_task() const;
 
-  void add_client(const client_t& client);
+  void add_client(const cl_t& client);
   void pop_client();
-  client_t& get_client();
+  cl_t& get_client();
 
 
 
   inline const uint16_t& get_limit() {return _queue_limit;}
-  void status() const;
-
-  typedef struct Metrics {
-    uint16_t accept, serviced, deny;
-  } metric_t;
+  void status() const; 
 
   inline metric_t get_metric() const {
     return {_accept_count, _serviced_count, _deny_count};
   }
-} sim_t;
+};
+
+typedef BaseSimulation<client_t, task_t> sim_t;
+
+extern template class BaseSimulation<client_t, task_t>;
 
 #endif // !SIMULATION_H

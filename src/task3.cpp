@@ -1,5 +1,6 @@
 #include "main.h"
 #include "simulation.h"
+#include "det_sim.h"
 #include "pois_distr.h"
 #include "exp_distr.h"
 
@@ -28,7 +29,7 @@ constexpr float service_time_step = 1.0f;
 constexpr char out_separator = ';';
 constexpr char out_new_line = '\n';
 
-void task1(int argc, char *argv[]) {
+void task3(int argc, char *argv[]) {
   if(argc < InpSize) {
     std::cout << "Failed: invalid amount arguments\n"
               << "Seed\nFileOutput\nSimTime\nCycles\n"
@@ -54,12 +55,7 @@ void task1(int argc, char *argv[]) {
         client_flow = std::atof(argv[ClientFlow]);
   bool strict_time = !std::strcmp(argv[StrictTimings], "true") ? true : false;
 
-  uint16_t increment_service_time_amount;
-  std::cout << "Increment by 1 service_time? (1-no, any num>1 - yes and amount): ";
-  std::cin >> increment_service_time_amount; 
-  std::cout << "Incrementing by 1: " << increment_service_time_amount << " times\n";
-
-  for(uint16_t amount=0; amount<increment_service_time_amount; service_time += 1 && ++amount) {
+  // Main simulation body
     #ifdef OUTPUT_HEAD
     output << sim_time << out_separator << queue_limit << out_separator << service_limit << out_separator
           << service_time << out_separator << client_flow << out_new_line;
@@ -67,8 +63,10 @@ void task1(int argc, char *argv[]) {
 
     Distribution::pois_dt client_disrt(margin, client_flow);
     Distribution::exp_dt service_distr(margin, 1/service_time);
+  
 
     metric_t* median = new metric_t[cycles];
+    dmetric_t* median_detailed = new dmetric_t[cycles];
 
     // Simulation setup
     for(uint16_t i=0; i<cycles; ++i) {
@@ -76,14 +74,14 @@ void task1(int argc, char *argv[]) {
       std::cout << "Cycle n:" << i << "\n";
       #endif
 
-      sim_t simulation(queue_limit, service_limit, margin);
+      dsim_t simulation(queue_limit, service_limit, margin);
 
       // Simulation status output every 1 time unit
       float time = 0.0f;
       std::function<void()> repeat_status;
       repeat_status = [&simulation, &repeat_status, &time, &output](){
-        metric_t metric = simulation.get_metric();
         #ifdef DETAILED
+        metric_t metric = simulation.get_metric();
         output << time << out_separator << metric.accept << out_separator
               << metric.serviced << out_separator << metric.deny << out_new_line;
         #endif
@@ -92,6 +90,9 @@ void task1(int argc, char *argv[]) {
         simulation.status();
         #endif
         time += status_step;
+        dmetric_t& dmetric = simulation.get_d_metric();
+        dmetric.a_queue_size += simulation.get_queue_size();
+        dmetric.a_service_size += simulation.get_service_size();
         simulation.add_task({"status_func", 1.0f, repeat_status});
       };
       simulation.add_task({"init_status", 0.0f, repeat_status});
@@ -112,9 +113,18 @@ void task1(int argc, char *argv[]) {
 
       // Write results
       median[i] = simulation.get_metric();
+      median_detailed[i] = dmetric_t(simulation.get_d_metric());
+
+      median_detailed[i].t_in_service /= median[i].serviced;
+      median_detailed[i].t_in_queue /= median[i].serviced + service_limit;
+      median_detailed[i].a_queue_size /= sim_time / service_time_step;
+      median_detailed[i].a_service_size /= sim_time / service_time_step;
+
       #ifdef OUTPUT_EACH_SIM
       output << median[i].accept << out_separator << median[i].deny << out_separator
-             << median[i].serviced << out_new_line;
+             << median[i].serviced << out_separator << median_detailed[i].t_in_service << out_separator
+             << median_detailed[i].t_in_queue << out_separator << median_detailed[i].a_service_size << out_separator
+             << median_detailed[i].a_queue_size << out_new_line;
       #endif
     }
 
@@ -122,22 +132,37 @@ void task1(int argc, char *argv[]) {
       float accept = 0;
       float deny = 0;
       float serviced = 0;
+      float t_service = 0;
+      float t_queue = 0;
+      float a_service = 0;
+      float a_queue = 0;
     } res_metric;
 
     for(uint16_t i=0; i<cycles; ++i) {
       res_metric.accept += (float)median[i].accept / cycles;
       res_metric.deny += (float)median[i].deny / cycles;
       res_metric.serviced += (float)median[i].serviced / cycles;
+      res_metric.t_service += median_detailed[i].t_in_service / cycles;
+      res_metric.t_queue += median_detailed[i].t_in_queue / cycles;
+      res_metric.a_service += median_detailed[i].a_service_size / cycles;
+      res_metric.a_queue += median_detailed[i].a_queue_size / cycles;
     }
 
     #ifdef OUTPUT_RESULTS
     output << res_metric.accept << out_separator << res_metric.deny << out_separator
-           << res_metric.serviced << out_new_line;
+           << res_metric.serviced << out_separator << res_metric.t_service << out_separator
+           << res_metric.t_queue << out_separator << res_metric.a_service << out_separator
+           << res_metric.a_queue << out_new_line;
     #endif
 
     std::cout << "Results:\n\tAccepted: " << res_metric.accept
               << "\n\tDeny: " << res_metric.deny
-              << "\n\tServiced: " << res_metric.serviced << "\n";
-  }
+              << "\n\tServiced: " << res_metric.serviced
+              << "\n\tDeny Probability: " << res_metric.deny / (res_metric.accept + res_metric.deny)
+              << "\n\tTime in service: " << res_metric.t_service
+              << "\n\tTime in queue: " << res_metric.t_queue
+              << "\n\tAvg amount in service: " << res_metric.a_service
+              << "\n\tAvg amount in queue: " << res_metric.a_queue << "\n";
+  
   output.close(); 
   }

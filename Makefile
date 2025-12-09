@@ -7,9 +7,10 @@ INCLUDE_DIR=include
 SRC=$(wildcard $(SRC_DIR)/*.cpp)
 OBJ=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o, $(SRC))
 
-GCC = g++
-GCCFLAGS = -Wall -Wextra -I$(INCLUDE_DIR)# -DDEBUG
+TAGS=-DOUTPUT_EACH_SIM -DTASK3
 
+GCC = g++
+GCCFLAGS = -Wall -Wextra -I$(INCLUDE_DIR) $(TAGS)
 $(TARGET): $(OBJ)
 	$(GCC) $(GCCFLAGS) $^ -o $(TARGET)
 

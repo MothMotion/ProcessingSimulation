@@ -28,7 +28,7 @@ constexpr float service_time_step = 1.0f;
 constexpr char out_separator = ';';
 constexpr char out_new_line = '\n';
 
-void task1(int argc, char *argv[]) {
+void task2(int argc, char *argv[]) {
   if(argc < InpSize) {
     std::cout << "Failed: invalid amount arguments\n"
               << "Seed\nFileOutput\nSimTime\nCycles\n"
@@ -54,12 +54,7 @@ void task1(int argc, char *argv[]) {
         client_flow = std::atof(argv[ClientFlow]);
   bool strict_time = !std::strcmp(argv[StrictTimings], "true") ? true : false;
 
-  uint16_t increment_service_time_amount;
-  std::cout << "Increment by 1 service_time? (1-no, any num>1 - yes and amount): ";
-  std::cin >> increment_service_time_amount; 
-  std::cout << "Incrementing by 1: " << increment_service_time_amount << " times\n";
-
-  for(uint16_t amount=0; amount<increment_service_time_amount; service_time += 1 && ++amount) {
+  // Main simulation body
     #ifdef OUTPUT_HEAD
     output << sim_time << out_separator << queue_limit << out_separator << service_limit << out_separator
           << service_time << out_separator << client_flow << out_new_line;
@@ -67,6 +62,7 @@ void task1(int argc, char *argv[]) {
 
     Distribution::pois_dt client_disrt(margin, client_flow);
     Distribution::exp_dt service_distr(margin, 1/service_time);
+  
 
     metric_t* median = new metric_t[cycles];
 
@@ -137,7 +133,8 @@ void task1(int argc, char *argv[]) {
 
     std::cout << "Results:\n\tAccepted: " << res_metric.accept
               << "\n\tDeny: " << res_metric.deny
-              << "\n\tServiced: " << res_metric.serviced << "\n";
-  }
+              << "\n\tServiced: " << res_metric.serviced
+              << "\n\tDeny Probability: " << res_metric.deny / (res_metric.accept + res_metric.deny) << "\n";
+  
   output.close(); 
   }

@@ -16,6 +16,9 @@ int main (int argc, char *argv[]) {
   #ifdef TASK4
   task4(argc, argv);
   #endif
+  #ifdef TASK5
+  task5(argc, argv);
+  #endif
 
   return 0;
 }

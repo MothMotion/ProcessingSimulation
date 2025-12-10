@@ -20,7 +20,7 @@ sim_tmpl::BaseSimulation(const uint16_t& queue_lim, const uint16_t& service_lim,
                          const float& margin) {
   _queue_limit = queue_lim;
   _margin = margin;
-  _service_limit = service_lim;
+  _service_limit = service_lim; 
 }
 
 tmpl
@@ -167,7 +167,7 @@ void sim_tmpl::status() const {
   for(uint16_t i=0; i<_queue_limit; ++i)
     std::cout << (i<_client_queue.size() ? "|" : " ");
 
-  sim_t::metric_t metric = get_metric();
+  metric_t metric = get_metric();
   std::cout << "\nA:" << metric.accept
             << " D:" << metric.deny
             << " S:" << metric.serviced << "\n" << std::flush;

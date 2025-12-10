@@ -23,16 +23,15 @@ void Scope::set_value(const float& val, const scope_e& wh) {
     std::swap(start, end);
 }
 
-BaseDistribution::BaseDistribution(const scope_t& scope, const float& margin, std::function<float(const float&)> func) {
+BaseDistribution::BaseDistribution(const scope_t& scope, const float& margin) {
   _scope = scope;
   _margin = margin;
-  _function = func;
 }
 
 //const float BaseDistribution::probability(const float& inp);
 
 const float BaseDistribution::probability(const float& inp) {
-  return _function(inp);
+  return inp;
 }
 
 const float BaseDistribution::inverse(const float& inp) {
@@ -50,9 +49,6 @@ const float BaseDistribution::inverse(const float& inp) {
 
   float mid_prob = probability(middle(scope.start, scope.end));
   while(fabsf( mid_prob - inp ) > _margin) {
-    #ifdef DEBUG
-    std::cout << "val: " << mid_prob << " scope: " << scope.start << " " << scope.end << "\n";
-    #endif
     if(mid_prob < inp)
       scope.start = middle(scope.start, scope.end);
     else
@@ -61,12 +57,10 @@ const float BaseDistribution::inverse(const float& inp) {
     if(mid_prob != 1 && mid_prob == probability(middle(scope.start, scope.end)))
       return middle(scope.start, scope.end);
     mid_prob = probability(middle(scope.start, scope.end));
-    #ifdef DEBUG
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    #endif
   }
   #ifdef DEBUG
   std::cout << "Returning value: " << middle(scope.start, scope.end) << "\n";
+  std::this_thread::sleep_for(std::chrono::milliseconds(100));
   #endif
   return middle(scope.start, scope.end);
 }

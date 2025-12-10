@@ -1,6 +1,7 @@
 #ifndef DISTR_H
 #define DISTR_H
 
+#include <cmath>
 #include <functional>
 
 namespace Distribution {
@@ -24,9 +25,10 @@ protected:
   std::function<float(const float&)> _function;
 
 public:
-  BaseDistribution(const scope_t& scope, const float& margin, std::function<float(const float&)>);
+  BaseDistribution(const scope_t& scope = {0, 1},
+                   const float& margin = 0);
 
-  const float probability(const float& input);
+  virtual const float probability(const float& input);
   const float inverse(const float& input);
 
   const scope_t& get_scope();

@@ -14,7 +14,9 @@ private:
   float _param;
   boost::math::poisson_distribution<float> _distribution;
 public:
-  PoisDistribution(const float& margin, const float& param);
+  PoisDistribution(const float& margin = 0, const float& param = 1);
+
+  const float probability(const float& value) override;
 } pois_dt;
 
 }

@@ -7,7 +7,7 @@ INCLUDE_DIR=include
 SRC=$(wildcard $(SRC_DIR)/*.cpp)
 OBJ=$(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o, $(SRC))
 
-TAGS=-DOUTPUT_EACH_SIM -DTASK3
+TAGS=-DOUTPUT_EACH_SIM -DTASK4
 
 GCC = g++
 GCCFLAGS = -Wall -Wextra -I$(INCLUDE_DIR) $(TAGS)

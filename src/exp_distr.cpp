@@ -8,10 +8,15 @@
 namespace Distribution {
 
 ExpDistribution::ExpDistribution(const float& margin, const float& param)
-  : BaseDistribution(scope_t{0, INFINITY}, margin, [this](const float& val){ 
-    return boost::math::cdf(this->_distribution, val); 
-  }) {
-  _distribution = boost::math::exponential_distribution<float>(param);
+  : BaseDistribution(scope_t{0, INFINITY}, margin), _param(param),
+  _distribution(boost::math::exponential_distribution<float>(param)) {
+  #ifdef DEBUG
+  std::cout << "Param: " << this << "\n";
+  #endif
+}
+
+const float exp_dt::probability(const float& inp) {
+  return boost::math::cdf(_distribution, inp);
 }
 
 }

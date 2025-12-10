@@ -14,7 +14,9 @@ private:
   float _param;
   boost::math::exponential_distribution<float> _distribution;
 public:
-  ExpDistribution(const float& margin, const float& param);
+  ExpDistribution(const float& margin = 0, const float& param = 1);
+
+  const float probability(const float& value) override;
 } exp_dt;
 
 }

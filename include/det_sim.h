@@ -20,8 +20,8 @@ extern template class BaseSimulation<dclient_t, task_t>;
 
 class DetailedSimulation : public BaseSimulation<dclient_t, task_t> { 
 protected:
-private:
   dmetric_t _dmetric;
+private:
 public:
   DetailedSimulation(const uint16_t& queue_limit = 0, const uint16_t& service_limit = 0,
                      const float& margin = 0.0f) : BaseSimulation<dclient_t, task_t>(queue_limit, service_limit, margin) {}
